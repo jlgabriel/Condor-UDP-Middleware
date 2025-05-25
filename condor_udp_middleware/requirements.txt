@@ -1,0 +1,25 @@
+# Condor UDP Middleware - Python Dependencies
+
+# Core Python libraries (usually included with Python)
+# tkinter - GUI framework (included with Python)
+# asyncio - Asynchronous programming (included with Python 3.7+)
+# threading - Threading support (included with Python)
+# socket - Network communication (included with Python)
+# json - JSON handling (included with Python)
+# logging - Logging system (included with Python)
+# dataclasses - Data classes (included with Python 3.7+)
+# pathlib - Path handling (included with Python 3.4+)
+
+# No external dependencies required for basic functionality
+# The middleware is designed to work with Python's standard library only
+
+# Optional dependencies for enhanced features:
+# pyinstaller>=5.0    # For creating standalone executables
+# pytest>=7.0         # For running tests (if test suite is added)
+# black>=22.0         # For code formatting (development)
+# flake8>=5.0         # For code linting (development)
+
+# System requirements:
+# Python 3.8 or later
+# Windows 10/11, macOS 10.14+, or Linux with GUI support (for GUI mode)
+# UDP network access (ports 55278 and 55300 by default)
