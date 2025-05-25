@@ -4,8 +4,6 @@
 Main entry point for Condor UDP Middleware
 Parses command line arguments and starts the application
 in either GUI or CLI mode.
-
-Middleware UDP para Condor - Especificaciones Finales
 """
 
 import os
