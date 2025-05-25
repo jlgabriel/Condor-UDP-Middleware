@@ -160,7 +160,7 @@ Options:
 
 ```
 ┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
-│ Condor Simulator│───▶│ UDP Middleware   │───▶│ Target App      │
+│ Condor Simulator│--->│ UDP Middleware   │--->│ Target App      │
 │ Port: 55278     │    │ Converts Units   │    │ Port: 55300     │
 │                 │    │ Real-time        │    │ (Free Condor    │
 │ altitude=1000.0 │    │ Processing       │    │ Instruments,    │
@@ -169,7 +169,7 @@ Options:
 └─────────────────┘    │ airspeed=59.2    │    │ altitude=3281.0 │
                        │ vario=-413.4     │    │ airspeed=59.2   │
                        └──────────────────┘    │ vario=-413.4    │
-                       meters→feet              └─────────────────┘
+                       meters→feet             └─────────────────┘
                        m/s→knots, ft/min
 ```
 
