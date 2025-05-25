@@ -2,135 +2,147 @@
 
 A real-time unit conversion middleware for Condor Soaring Simulator that receives UDP data, converts units according to user preferences, and forwards the converted data to external applications while maintaining the original message format.
 
-## Overview
-
-Condor UDP Middleware acts as a transparent bridge between Condor Soaring Simulator and external applications by:
-
-1. **Receiving UDP data** from Condor Soaring Simulator
-2. **Converting units** in real-time based on user preferences (altitude, speed, vario, acceleration)
-3. **Forwarding converted data** to target applications maintaining the original key=value format
-4. **Providing real-time monitoring** through an intuitive GUI with conversion statistics
-
 ## Features
 
 - **Real-time unit conversion** - Convert altitude, speed, vario, and acceleration units on-the-fly
-- **Configurable conversions** - Easy dropdown selection for different unit systems
+- **Dynamic configuration** - Change conversion settings without restarting the middleware  
+- **User-friendly GUI** - Intuitive interface with live statistics and conversion monitoring
 - **Transparent operation** - External applications receive data in the same format as Condor
-- **GUI and CLI modes** - Run with graphical interface or headless for automated setups
-- **Live statistics** - Monitor data flow, conversion rates, and performance metrics
-- **Flexible networking** - Support for local and remote panel configurations
-- **Robust architecture** - Thread-safe operation with comprehensive error handling
+- **Live performance monitoring** - Real-time data flow statistics and conversion rates
+- **CLI and GUI modes** - Run with graphical interface or headless for automated setups
+- **Robust error handling** - Thread-safe operation with comprehensive error recovery
+- **Tested compatibility** - Verified working with Free Condor Instruments and other panel software
 
-## Supported Unit Conversions
+## Why Use This Middleware?
 
-| Variable Type | Source (Condor) | Target Options |
-|---------------|-----------------|----------------|
-| **Altitude** | meters | meters, feet |
-| **Speed** | m/s | m/s, km/h, knots |
-| **Vario** | m/s | m/s, ft/min |
-| **Acceleration** | m/s² | m/s², ft/s² |
+Perfect for pilots who need different unit systems than Condor's default metric output:
+- **US pilots**: Convert altitude to feet, speed to knots, vario to ft/min
+- **Cockpit builders**: Use with any panel software expecting specific units
+- **Data logging**: Standardize units for analysis and recording
+- **Regional preferences**: Match local aviation standards and training
 
-### Variables Converted
+## System Requirements
 
-- **Altitude**: `altitude`, `height`, `wheelheight`
-- **Speed**: `airspeed`, `vx`, `vy`, `vz`
-- **Vario**: `vario`, `evario`, `nettovario`
-- **Acceleration**: `ax`, `ay`, `az`
+- **Operating System**: Windows (Condor is Windows-only)
+- **Python**: 3.8 or later
+- **Condor Soaring Simulator** with UDP output enabled
+- **Target application** configured to receive UDP data (e.g., Free Condor Instruments)
 
-## Installation
+## Quick Start
 
-### Prerequisites
+### 1. Installation
 
-- Python 3.8 or later
-- Condor Soaring Simulator with UDP output enabled
-- Target application configured to receive UDP data
-
-### Quick Start
-
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/yourusername/condor-udp-middleware.git
-   cd condor-udp-middleware
-   ```
-
-2. **Install dependencies:**
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-3. **Run the middleware:**
-   ```bash
-   python main.py
-   ```
-
-## Configuration
-
-### Condor Setup
-
-Configure Condor to send UDP data by editing the UDP configuration:
-
-```ini
-# In Condor's UDP settings
-Enabled=1
-Host=127.0.0.1
-Port=55278
-SendIntervalMs=100
-ExtendedData=1
+```bash
+git clone https://github.com/yourusername/condor-udp-middleware.git
+cd condor-udp-middleware
+pip install -r requirements.txt
 ```
 
-### Middleware Configuration
+### 2. Configure Condor
 
-The middleware can be configured through:
+Edit Condor's UDP configuration file (`Condor/Settings/UDP.ini`):
 
-1. **GUI Settings Dialog** - Access via the "Settings" button
-2. **Configuration File** - Automatically created at `~/.condor_udp_middleware/config.json`
-3. **Command Line Arguments** - Override settings for specific runs
+```ini
+[General]
+Enabled=1
 
-#### Default Configuration
+[Connection]
+Host=127.0.0.1
+Port=55278
 
-- **Input UDP**: Port 55278 (receives from Condor)
-- **Output UDP**: 127.0.0.1:55300 (sends to target application)
-- **Conversions**: Disabled by default
+[Misc]
+SendIntervalMs=100
+ExtendedData=1
+LogToFile=0
+```
 
-#### Network Configurations
+### 3. Run the Middleware
 
-| Scenario | Input Port | Output Host | Output Port |
-|----------|------------|-------------|-------------|
-| Same PC | 55278 | 127.0.0.1 | 55300 |
-| Remote Panel | 55278 | 192.168.1.100 | 55278 |
-| Multiple Panels | 55278 | Various IPs | 55278 |
-
-### Target Application Setup
-
-Configure your target application (PanelBuilder, custom panels, etc.) to receive UDP data on the middleware's output port (default: 55300).
-
-## Usage
-
-### GUI Mode (Default)
-
+**GUI Mode (Recommended):**
 ```bash
 python main.py
 ```
 
-The GUI provides:
-- **Real-time status** monitoring
-- **Quick conversion toggles** for immediate unit changes
-- **Detailed statistics** showing data flow and conversion rates
-- **Live logging** with configurable levels
-- **Settings management** with validation
-
-### CLI Mode
-
+**CLI Mode:**
 ```bash
 python main.py --cli
 ```
 
-For headless operation with:
-- **Automatic startup** on system boot
-- **Log file output** for monitoring
-- **Signal handling** for graceful shutdown
+### 4. Configure Your Target Application
 
-### Command Line Options
+Configure your panel software (e.g., Free Condor Instruments) to receive UDP data on:
+- **Host**: `127.0.0.1`
+- **Port**: `55300` (default middleware output port)
+
+## Supported Unit Conversions
+
+| Variable Type | Source (Condor) | Target Options | Example Variables |
+|---------------|-----------------|----------------|-------------------|
+| **Altitude** | meters | meters, feet | `altitude`, `height`, `wheelheight` |
+| **Speed** | m/s | m/s, km/h, knots | `airspeed`, `vx`, `vy`, `vz` |
+| **Vario** | m/s | m/s, ft/min | `vario`, `evario`, `nettovario` |
+| **Acceleration** | m/s² | m/s², ft/s² | `ax`, `ay`, `az` |
+
+### Conversion Factors
+- **Altitude**: 1 meter = 3.28084 feet
+- **Speed**: 1 m/s = 3.6 km/h = 1.94384 knots  
+- **Vario**: 1 m/s = 196.85 ft/min
+- **Acceleration**: 1 m/s² = 3.28084 ft/s²
+
+## Configuration
+
+### Network Settings
+```json
+{
+  "network": {
+    "input_port": 55278,
+    "output_host": "127.0.0.1", 
+    "output_port": 55300
+  }
+}
+```
+
+### Conversion Settings
+```json
+{
+  "conversions": {
+    "enabled": true,
+    "altitude": "feet",
+    "speed": "knots",
+    "vario": "fpm",
+    "acceleration": "fps2"
+  }
+}
+```
+
+## Performance Metrics
+
+- **Processing Rate**: 10+ messages/second
+- **Latency**: <1ms conversion time
+- **Memory Usage**: ~20MB typical
+- **CPU Usage**: <1% on modern systems
+- **Reliability**: 100% message forwarding success
+- **Precision**: Maintains Condor's full numeric precision
+
+## Architecture
+
+```
+condor_udp_middleware/
+├── main.py                 # Application entry point
+├── core/
+│   ├── bridge.py          # Main orchestrator
+│   ├── converter.py       # Unit conversion engine
+│   ├── settings.py        # Configuration management
+│   └── log_config.py      # Logging system
+├── gui/
+│   ├── main_window.py     # Primary GUI interface
+│   ├── status_panel.py    # Real-time monitoring
+│   └── settings_dialog.py # Configuration UI
+└── udp_io/
+    └── udp_sender.py      # Additional UDP utilities
+```
+
+## Command Line Options
 
 ```bash
 python main.py [options]
@@ -150,38 +162,56 @@ Options:
 ┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
 │ Condor Simulator│───▶│ UDP Middleware   │───▶│ Target App      │
 │ Port: 55278     │    │ Converts Units   │    │ Port: 55300     │
-│                 │    │ Real-time        │    │ (PanelBuilder,  │
-│ altitude=1000.0 │    │ Processing       │    │ Custom Panels)  │
-│ airspeed=30.5   │    │                  │    │                 │
-│ vario=-2.1      │    │ altitude=3281.0  │    │ altitude=3281.0 │
-└─────────────────┘    │ airspeed=59.2    │    │ airspeed=59.2   │
-                       │ vario=-413.4     │    │ vario=-413.4    │
-                       └──────────────────┘    └─────────────────┘
-                       meters→feet              knots, ft/min
+│                 │    │ Real-time        │    │ (Free Condor    │
+│ altitude=1000.0 │    │ Processing       │    │ Instruments,    │
+│ airspeed=30.5   │    │                  │    │ Custom Panels)  │
+│ vario=-2.1      │    │ altitude=3281.0  │    │                 │
+└─────────────────┘    │ airspeed=59.2    │    │ altitude=3281.0 │
+                       │ vario=-413.4     │    │ airspeed=59.2   │
+                       └──────────────────┘    │ vario=-413.4    │
+                       meters→feet              └─────────────────┘
+                       m/s→knots, ft/min
 ```
 
-## Performance
+## Verified Compatibility
 
-- **Processing Rate**: 10+ messages/second
-- **Latency**: <1ms conversion time
-- **Memory Usage**: ~20MB typical
-- **CPU Usage**: <1% on modern systems
-- **Reliability**: 100% message forwarding success
+### Tested Applications
+- **Free Condor Instruments** - Full compatibility confirmed
+- **Custom UDP panel applications** - Standard UDP format maintained
 
-## Architecture
+### Network Configurations
 
-```
-condor_udp_middleware/
-├── main.py                 # Application entry point
-├── core/
-│   ├── bridge.py          # Main orchestrator
-│   ├── converter.py       # Unit conversion engine
-│   ├── settings.py        # Configuration management
-│   └── log_config.py      # Logging system
-└── gui/
-    ├── main_window.py     # Primary GUI interface
-    ├── status_panel.py    # Real-time monitoring
-    └── settings_dialog.py # Configuration UI
+| Scenario | Input Port | Output Host | Output Port |
+|----------|------------|-------------|-------------|
+| Same PC | 55278 | 127.0.0.1 | 55300 |
+| Remote Panel | 55278 | 192.168.1.100 | 55278 |
+| Multiple Panels | 55278 | Various IPs | 55278 |
+
+## Troubleshooting
+
+### Common Issues
+
+**No data received:**
+- Verify Condor UDP output is enabled (`Enabled=1` in UDP.ini)
+- Check input port matches Condor's output port (55278)
+- Ensure Windows Firewall allows UDP traffic
+
+**Target application not receiving data:**
+- Verify output host and port configuration in middleware
+- Check target application is listening on correct port (55300)
+- Test network connectivity for remote configurations
+
+**Conversion not working:**
+- Enable conversions in GUI settings
+- Verify unit selections are different from source units
+- Check logs for conversion errors
+
+### Debug Logging
+
+Enable detailed logging for troubleshooting:
+
+```bash
+python main.py --log-level DEBUG --log-file middleware.log
 ```
 
 ## Use Cases
@@ -191,60 +221,44 @@ condor_udp_middleware/
 - Standardize vario readings across different instruments
 - Adapt speed displays for different aircraft types
 
-### Panel Building
-- **PanelBuilder Integration** - Direct compatibility with panel software
-- **Custom Panels** - Support for home-built cockpit displays
+### Cockpit Building
+- **Panel Integration** - Works with Free Condor Instruments and custom panels
 - **Multi-Monitor Setups** - Distribute converted data to multiple displays
+- **Hardware Interfaces** - Compatible with physical instrument panels
 
-### Data Logging
+### Data Analysis
 - **Unit Standardization** - Log all data in consistent units
-- **Analysis Tools** - Feed converted data to analysis applications
-- **Recording Systems** - Compatible with flight recording software
+- **Flight Recording** - Feed converted data to logging applications
+- **Performance Analysis** - Use with analysis tools expecting specific units
 
-### Network Configurations
-- **Remote Panels** - Send converted data over LAN/WAN
-- **Multiple Simulators** - Support multi-pilot scenarios
-- **Instructor Stations** - Provide converted data to instructor displays
+## Recent Updates
 
-## Troubleshooting
-
-### Common Issues
-
-**No data received:**
-- Verify Condor UDP output is enabled
-- Check input port matches Condor's output port
-- Ensure no firewall blocking UDP traffic
-
-**Target application not receiving data:**
-- Verify output host and port configuration
-- Check target application is listening on correct port
-- Test network connectivity for remote configurations
-
-**Conversion not working:**
-- Enable conversions in GUI or settings
-- Verify unit selections are different from source
-- Check logs for conversion errors
-
-### Logging
-
-Enable detailed logging for troubleshooting:
-
-```bash
-python main.py --log-level DEBUG --log-file middleware.log
-```
+### Version 1.0.0
+- Fixed critical None comparison bug - Resolved `'<' not supported between instances of 'NoneType' and 'float'`
+- Windows line ending compatibility - Fixed format compatibility with Free Condor Instruments
+- Enhanced error handling - Robust error recovery and logging
+- Real-time conversion statistics - Live monitoring of conversion performance
+- Dynamic configuration - Change settings without restarting
+- Full GUI implementation - Complete user interface with all features
 
 ## Contributing
 
 Contributions are welcome! Please feel free to submit pull requests, report bugs, or suggest features.
 
+### Development Setup
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test thoroughly with Condor and target applications
+5. Submit a pull request
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## Support
+## Acknowledgments
 
-For support, bug reports, or feature requests, please open an issue on GitHub.
-
----
-
-**Enjoy enhanced soaring simulation with real-time unit conversion!** ✈️
+- **Condor Development Team** - For creating an amazing soaring simulator
+- **Free Condor Instruments** - For inspiring panel integration possibilities
+- **Soaring Community** - For feedback and testing
+- Code assistance provided by Anthropic Claude Sonnet 4.0
