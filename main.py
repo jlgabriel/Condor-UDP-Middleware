@@ -18,13 +18,13 @@ import tkinter as tk
 from typing import Optional
 
 # Add current directory to path
-sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), 'condor_udp_middleware')))
 
 # Import our modules
-from core.log_config import configure_logging
-from core.bridge import UDPMiddlewareBridge
-from core.settings import MiddlewareSettings
-from gui.main_window import MiddlewareMainWindow
+from condor_udp_middleware.core.log_config import configure_logging
+from condor_udp_middleware.core.bridge import UDPMiddlewareBridge
+from condor_udp_middleware.core.settings import MiddlewareSettings
+from condor_udp_middleware.gui.main_window import MiddlewareMainWindow
 
 # Configure initial logging
 configure_logging(level=logging.INFO)
