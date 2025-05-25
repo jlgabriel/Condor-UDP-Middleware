@@ -261,4 +261,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **Condor Development Team** - For creating an amazing soaring simulator
 - **Free Condor Instruments** - For inspiring panel integration possibilities
 - **Soaring Community** - For feedback and testing
-- Code assistance provided by Anthropic Claude Sonnet 4.0
+- Code assistance provided by **Anthropic Claude Sonnet 4.0**
