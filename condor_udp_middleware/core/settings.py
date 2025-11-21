@@ -141,13 +141,13 @@ class MiddlewareSettings:
         except json.JSONDecodeError as e:
             logger.error(f"Error parsing config file: {e}")
             return False
-            
+
         except IOError as e:
             logger.error(f"Error reading config file: {e}")
             return False
-            
-        except Exception as e:
-            logger.error(f"Unexpected error loading config: {e}")
+
+        except (KeyError, ValueError, TypeError, OSError) as e:
+            logger.error(f"Error loading config: {e}")
             return False
     
     def save(self, config_file: Optional[str] = None) -> bool:
@@ -177,9 +177,9 @@ class MiddlewareSettings:
         except IOError as e:
             logger.error(f"Error writing config file: {e}")
             return False
-            
-        except Exception as e:
-            logger.error(f"Unexpected error saving config: {e}")
+
+        except (TypeError, ValueError, OSError) as e:
+            logger.error(f"Error saving config: {e}")
             return False
     
     def _create_default_config(self) -> None:
@@ -191,10 +191,11 @@ class MiddlewareSettings:
             # Save default settings
             with open(self.config_file, 'w') as f:
                 json.dump(self.settings, f, indent=2, cls=SettingsEncoder)
-                
+    
+
             logger.info(f"Default configuration created at {self.config_file}")
-            
-        except Exception as e:
+
+        except (IOError, TypeError, OSError) as e:
             logger.error(f"Error creating default config: {e}")
     
     def _update_from_dict(self, data: Dict[str, Any]) -> None:
@@ -256,9 +257,9 @@ class MiddlewareSettings:
                     return section_obj
                 elif hasattr(section_obj, key):
                     return getattr(section_obj, key)
-        except Exception as e:
+        except (AttributeError, KeyError) as e:
             logger.error(f"Error getting setting {section}.{key}: {e}")
-        
+
         return None
 
     def set(self, section: str, key: str, value: Any) -> bool:
@@ -304,7 +305,7 @@ class MiddlewareSettings:
                                     if real_type is str and value is not None:
                                         setattr(section_obj, key, str(value))
                                         return True
-                        except Exception:
+                        except (AttributeError, KeyError, TypeError, StopIteration):
                             pass
                         
                         # Fallback: set as-is
@@ -332,8 +333,8 @@ class MiddlewareSettings:
 
             return False
 
-        except Exception as e:
-            logger.error(f"Unexpected error setting {section}.{key}: {e}")
+        except (AttributeError, KeyError, ValueError, TypeError) as e:
+            logger.error(f"Error setting {section}.{key}: {e}")
             return False
     
     def get_conversion_units(self) -> Dict[str, List[str]]:
@@ -411,7 +412,7 @@ class MiddlewareSettings:
             )
 
             logger.info(f"Logging level set to {log_level}")
-        except Exception as e:
+        except (AttributeError, ValueError, OSError) as e:
             logger.error(f"Error applying logging settings: {e}")
     
     def validate(self) -> Dict[str, List[str]]:

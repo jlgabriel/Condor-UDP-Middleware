@@ -21,6 +21,14 @@ from condor_udp_middleware.core.converter import UnitConverter
 # Configure logging
 logger = logging.getLogger('bridge')
 
+# Network and threading constants
+# These values are tuned for optimal performance and stability
+UDP_BUFFER_SIZE = 65535  # Maximum UDP packet size (64KB)
+SOCKET_TIMEOUT = 0.5  # Socket read timeout in seconds (allows periodic checks)
+THREAD_JOIN_TIMEOUT = 2.0  # Maximum time to wait for thread termination in seconds
+MAIN_LOOP_INTERVAL = 1.0  # Main monitoring loop check interval in seconds
+STATUS_LOG_INTERVAL = 30  # Status logging interval in seconds
+
 
 class MiddlewareUDPReceiver:
     """Simplified UDP receiver for the middleware."""
@@ -45,7 +53,7 @@ class MiddlewareUDPReceiver:
         try:
             self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-            self.socket.settimeout(0.5)
+            self.socket.settimeout(SOCKET_TIMEOUT)
             self.socket.bind((self.host, self.port))
 
             self.running = True
@@ -66,7 +74,7 @@ class MiddlewareUDPReceiver:
         """Main receive loop."""
         while self.running:
             try:
-                data, addr = self.socket.recvfrom(65535)
+                data, addr = self.socket.recvfrom(UDP_BUFFER_SIZE)
                 if data:
                     decoded_message = data.decode('utf-8', errors='ignore')
                     self.messages_received += 1
@@ -87,20 +95,23 @@ class MiddlewareUDPReceiver:
                     logger.error(f"UDP receive error: {e}")
                     self.error_count += 1
                 break
-            except Exception as e:
-                logger.error(f"Unexpected error in receive loop: {e}")
+            except UnicodeDecodeError as e:
+                logger.error(f"Error decoding UDP message: {e}")
+                self.error_count += 1
+            except (ValueError, AttributeError) as e:
+                logger.error(f"Error processing received data: {e}")
                 self.error_count += 1
 
     def close(self):
         """Close the UDP receiver."""
         self.running = False
         if self.receive_thread and self.receive_thread.is_alive():
-            self.receive_thread.join(timeout=2.0)
+            self.receive_thread.join(timeout=THREAD_JOIN_TIMEOUT)
         if self.socket:
             try:
                 self.socket.close()
-            except:
-                pass
+            except OSError as e:
+                logger.warning(f"Error closing receiver socket: {e}")
 
     def get_status(self) -> Dict[str, Any]:
         """Get receiver status."""
@@ -181,8 +192,8 @@ class MiddlewareUDPSender:
             logger.error(f"Error sending UDP message: {e}")
             self.error_count += 1
             return False
-        except Exception as e:
-            logger.error(f"Unexpected error sending message: {e}")
+        except (UnicodeEncodeError, TypeError) as e:
+            logger.error(f"Error encoding message: {e}")
             self.error_count += 1
             return False
 
@@ -304,7 +315,7 @@ class UDPMiddlewareBridge:
                 logger.warning("Failed to forward converted message")
                 self.error_count += 1
 
-        except Exception as e:
+        except (KeyError, TypeError, AttributeError) as e:
             logger.error(f"Error processing UDP data: {e}")
             self.error_count += 1
 
@@ -377,14 +388,14 @@ class UDPMiddlewareBridge:
         try:
             self.udp_sender.close()
             logger.info("UDP sender stopped")
-        except Exception as e:
+        except (OSError, AttributeError) as e:
             logger.error(f"Error stopping UDP sender: {e}")
 
         # Stop UDP receiver
         try:
             self.udp_receiver.close()
             logger.info("UDP receiver stopped")
-        except Exception as e:
+        except (OSError, AttributeError) as e:
             logger.error(f"Error stopping UDP receiver: {e}")
 
         logger.info("Bridge stopped successfully")
@@ -396,19 +407,18 @@ class UDPMiddlewareBridge:
 
             while self.running:
                 await self._check_components()
-                await asyncio.sleep(1.0)  # Check every second
+                await asyncio.sleep(MAIN_LOOP_INTERVAL)
 
-                # Log status every 30 seconds
+                # Log status periodically
                 now = time.time()
-                if now - last_status_log > 30:
+                if now - last_status_log > STATUS_LOG_INTERVAL:
                     self._log_status()
                     last_status_log = now
 
         except asyncio.CancelledError:
             logger.info("Main loop cancelled")
             raise
-
-        except Exception as e:
+        except (KeyError, AttributeError, TypeError) as e:
             logger.error(f"Error in main loop: {e}")
             self.error_count += 1
 

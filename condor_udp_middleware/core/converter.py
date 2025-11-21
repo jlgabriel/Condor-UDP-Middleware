@@ -9,6 +9,7 @@ Part of the Condor UDP Middleware project.
 
 import re
 import logging
+import string
 from typing import Dict, Any, Optional, List, Tuple
 
 # Configure logging
@@ -85,18 +86,61 @@ class UnitConverter:
         # Statistics
         self.conversions_applied = 0
         self.variables_converted = set()
-    
+
+        # Validation constants
+        self.max_message_size = 65535  # Maximum UDP packet size
+        self.min_message_size = 5  # Minimum reasonable message size (e.g., "a=1")
+
+    def _validate_message(self, message: str) -> Tuple[bool, str]:
+        """
+        Validate UDP message format and content.
+
+        Args:
+            message: UDP message to validate
+
+        Returns:
+            Tuple of (is_valid, error_message)
+        """
+        # Check if message is empty or None
+        if not message:
+            return False, "Message is empty or None"
+
+        # Check message size bounds
+        if len(message) < self.min_message_size:
+            return False, f"Message too short (min {self.min_message_size} chars)"
+
+        if len(message) > self.max_message_size:
+            return False, f"Message too large (max {self.max_message_size} chars)"
+
+        # Check if message contains only valid characters
+        # Allow alphanumeric, underscore, equals, dot, minus, plus, newline, space, scientific notation
+        valid_chars = set(string.ascii_letters + string.digits + '_=.-+\n\r\t eE')
+        if not all(c in valid_chars for c in message):
+            return False, "Message contains invalid characters"
+
+        # Check if message has at least one key=value pair
+        if '=' not in message:
+            return False, "Message has no key=value pairs"
+
+        return True, ""
+
     def process_message(self, original_message: str) -> Tuple[str, Dict[str, Any]]:
         """
         Process a UDP message, applying unit conversions.
-        
+
         Args:
             original_message: Original UDP message from Condor
-            
+
         Returns:
             Tuple of (converted_message, conversion_info)
         """
         try:
+            # Validate message format
+            is_valid, error_msg = self._validate_message(original_message)
+            if not is_valid:
+                logger.warning(f"Invalid message format: {error_msg}")
+                return original_message, {"error": error_msg, "validation_failed": True}
+
             # Extract all key=value pairs
             pairs = self.kv_pattern.findall(original_message)
             if not pairs:
@@ -115,10 +159,10 @@ class UnitConverter:
             if conversion_info["conversions_applied"] > 0:
                 self.conversions_applied += conversion_info["conversions_applied"]
                 self.variables_converted.update(conversion_info["variables_converted"])
-            
+
             return converted_message, conversion_info
-            
-        except Exception as e:
+
+        except (AttributeError, KeyError, TypeError, ValueError) as e:
             logger.error(f"Error processing message: {e}")
             return original_message, {"error": str(e)}
     
@@ -207,8 +251,8 @@ class UnitConverter:
             else:
                 logger.warning(f"Unknown conversion type: {conversion_type}")
                 return value, False
-                
-        except Exception as e:
+
+        except (KeyError, ValueError, TypeError) as e:
             logger.error(f"Error converting {variable}: {e}")
             return value, False
     
@@ -267,8 +311,8 @@ class UnitConverter:
         pairs = []
         for key, value in data.items():
             if isinstance(value, float):
-                # Usar alta precisión como Condor original
-                pairs.append(f"{key}={value:.15g}")  # Hasta 15 dígitos significativos
+                # Use high precision like original Condor
+                pairs.append(f"{key}={value:.15g}")  # Up to 15 significant digits
             else:
                 pairs.append(f"{key}={value}")
 
@@ -320,7 +364,7 @@ class UnitConverter:
             variables = [key for key, _ in pairs]
             convertible = [var for var in variables if var in self.variable_mappings]
             return convertible
-        except Exception as e:
+        except (AttributeError, TypeError) as e:
             logger.error(f"Error analyzing message: {e}")
             return []
 
