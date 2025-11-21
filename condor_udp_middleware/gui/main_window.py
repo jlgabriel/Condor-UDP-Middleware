@@ -83,7 +83,7 @@ class MiddlewareMainWindow:
             icon_path = os.path.join(os.path.dirname(__file__), '../assets/icon.ico')
             if os.path.exists(icon_path):
                 self.master.iconbitmap(icon_path)
-        except Exception as e:
+        except (tk.TclError, IOError, OSError) as e:
             logger.warning(f"Could not set window icon: {e}")
 
         # Configure grid layout
@@ -369,7 +369,7 @@ class MiddlewareMainWindow:
             self.bridge = UDPMiddlewareBridge()
             logger.info("Bridge initialized")
             self.status_bar.config(text="Bridge initialized - Ready to start")
-        except Exception as e:
+        except (OSError, ValueError, TypeError, AttributeError) as e:
             logger.error(f"Error initializing bridge: {e}")
             messagebox.showerror(
                 "Initialization Error",
