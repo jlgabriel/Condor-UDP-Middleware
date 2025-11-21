@@ -33,8 +33,8 @@ Perfect for pilots who need different unit systems than Condor's default metric 
 ### 1. Installation
 
 ```bash
-git clone https://github.com/yourusername/condor-udp-middleware.git
-cd condor-udp-middleware
+git clone https://github.com/jlgabriel/Condor-UDP-Middleware.git
+cd Condor-UDP-Middleware
 pip install -r requirements.txt
 ```
 
@@ -134,12 +134,10 @@ condor_udp_middleware/
 │   ├── converter.py       # Unit conversion engine
 │   ├── settings.py        # Configuration management
 │   └── log_config.py      # Logging system
-├── gui/
-│   ├── main_window.py     # Primary GUI interface
-│   ├── status_panel.py    # Real-time monitoring
-│   └── settings_dialog.py # Configuration UI
-└── udp_io/
-    └── udp_sender.py      # Additional UDP utilities
+└── gui/
+    ├── main_window.py     # Primary GUI interface
+    ├── status_panel.py    # Real-time monitoring
+    └── settings_dialog.py # Configuration UI
 ```
 
 ## Command Line Options
@@ -233,6 +231,14 @@ python main.py --log-level DEBUG --log-file middleware.log
 
 ## Recent Updates
 
+### Version 1.1.0 (Current)
+- **Code quality improvements** - Removed 441 lines of unused code for cleaner codebase
+- **Enhanced exception handling** - Replaced generic exceptions with specific types (OSError, ValueError, etc.)
+- **Input validation** - Added comprehensive UDP message validation (format, size, content)
+- **Documented constants** - All hardcoded values now properly documented and named
+- **Standardized codebase** - All comments and documentation in English for international collaboration
+- **Improved robustness** - Better error messages and recovery mechanisms
+
 ### Version 1.0.0
 - Fixed critical None comparison bug - Resolved `'<' not supported between instances of 'NoneType' and 'float'`
 - Windows line ending compatibility - Fixed format compatibility with Free Condor Instruments
@@ -261,4 +267,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **Condor Development Team** - For creating an amazing soaring simulator
 - **Free Condor Instruments** - For inspiring panel integration possibilities
 - **Soaring Community** - For feedback and testing
-- Code assistance provided by **Anthropic Claude Sonnet 4.0**
+- Code assistance and quality improvements by **Anthropic Claude Sonnet 4.5**
